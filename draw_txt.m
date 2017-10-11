@@ -4,6 +4,7 @@ clc
 
 
 %% ouverture du fichier et separation en blocks
+fprintf(' \n %%%%%%%%%%%%%%%%%%%   DECRYPTAGE DU FICHIER.TXT  %%%%%%%%%%%%%%%%%%%%%%%%%% ')
 fileID = fopen('draw2.txt','r');
 Block = 1;
 LINE_COL=1;
@@ -80,16 +81,18 @@ M_DEP=[0,0,0,0,0,0];
 %% Ajouter un deplacement initial
 
 %% Deplacements LIGNES
+fprintf(' \n %%%%%%%%%%%%%%%%%%%   ETUDE DES TRANSFORMATIONS ELEMENTAIRES  %%%%%%%%%%%%%%%%%%%%%%%%%% ')
 fprintf([' \n On trace les lignes dans une image ',...
     '\n Il existe plusieurs types de lignes:',...
-    '\n \t -CONTINUOUS \t __________',...
+    '\n \t -CONTINUOUS  __________',...
     '\n \t -HIDDEN \t - - - - - ',...
     '\n \t -CENTER \t ____ _ ____ _ ',...
-    '\n \t -PHANTOM \t _____ _ _ _____ _ _'])
+    '\n \t -PHANTOM \t _____ _ _ _____ _ _ \n'])
 figure
 hold on
 grid off
 
+fprintf(' \n Début etude des lignes ')
 
 for a=1:LINE_COL-1
     x_ori=str2double(Lines(9,a));
@@ -99,22 +102,22 @@ for a=1:LINE_COL-1
     M_DEP=[M_DEP;[x_ori,y_ori,x_end,y_end,0,0]];
     if strcmp(Lines{7,a},'CONTINUOUS')
         M_DEP(end,6)=1;
-        line([x_ori,x_end],[y_ori,y_end],'Color','black','LineStyle','-')
+        line([x_ori,x_end],[y_ori,y_end],'Color','k','LineStyle','-')
     elseif strcmp(Lines{7,a},'HIDDEN')
         M_DEP(end,6)=2;
-        line([x_ori,x_end],[y_ori,y_end],'Color','black','LineStyle','--')
+        line([x_ori,x_end],[y_ori,y_end],'Color','k','LineStyle','--')
     elseif strcmp(Lines{7,a},'CENTER')
         M_DEP(end,6)=3;
-        line([x_ori,x_end],[y_ori,y_end],'Color','black','LineStyle','-.')
+        line([x_ori,x_end],[y_ori,y_end],'Color','k','LineStyle','-.')
     elseif strcmp(Lines{7,a},'PHANTOM')
         M_DEP(end,6)=4;
         line([x_ori,x_end],[y_ori,y_end],'Color','k','LineStyle','-.')
     end
 end
 
-
+fprintf(' \n Fin etude des lignes ')
 % Deplacements CERCLES
-
+fprintf(' \n Début etude des cercles ')
 for a=1:CIR_COL-1
     x_center=str2double(Circles(9,a));
     y_center=str2double(Circles(11,a));
@@ -135,19 +138,17 @@ for a=1:CIR_COL-1
         rectangle('Position',[x_center-radius,y_center-radius,2*radius,2*radius],'Curvature',[1 1],'EdgeColor','k','LineStyle','-.');
     end
 end
-
-%% Deplacements ARCS
+fprintf(' \n Fin etude des cercles ')
+% Deplacements ARCS
+fprintf(' \n Début etude des arcs ')
 for a=1:ARC_COL-1
     x_center_ori=str2double(Arcs(9,a));
     y_center_ori=str2double(Arcs(11,a));
     radius=str2double(Arcs(13,a));
     Angle_ori=str2double(Arcs(15,a));
-    if Angle_ori>180
-        Angle_ori=Angle_ori-360;
-    end
     Angle_end=str2double(Arcs(17,a));
-    if Angle_end>180
-        Angle_end=Angle_end-360;
+    if Angle_end<Angle_ori
+        Angle_end=Angle_end+360;
     end
 
 if Angle_end<Angle_ori
@@ -157,7 +158,7 @@ if Angle_end<Angle_ori
 end
 M_DEP=[M_DEP;[x_center+radius*cos(Angle_ori*pi/180),y_center+radius*sin(Angle_ori*pi/180),...
               x_center+radius*cos(Angle_end*pi/180),y_center+radius*sin(Angle_ori*pi/180),1/radius,0]];
-    if strcmp(Lines{7,a},'CONTINUOUS')
+    if strcmp(Arcs{7,a},'CONTINUOUS')
          plot_arc(Angle_ori,Angle_end,x_center_ori,y_center_ori,radius,'-');
          M_DEP(end,6)=1;
     elseif strcmp(Arcs{7,a},'HIDDEN')
@@ -171,9 +172,9 @@ M_DEP=[M_DEP;[x_center+radius*cos(Angle_ori*pi/180),y_center+radius*sin(Angle_or
           M_DEP(end,6)=4;
     end
 end
-
+fprintf(' \n Fin etude des arcs ')
 %% Deplacements SOLIDS
-
+fprintf(' \n Début etude des solides ')
 for a=1:SOL_COL-1
     x_1=str2double(Solids(9,a));
     y_1=str2double(Solids(11,a));
@@ -215,11 +216,11 @@ Y=[y_1;y_2;y_3;y_4];
         fill(X,Y,'k')
     end
 end
-
+fprintf(' \n Fin etude des solide ')
 %% Ajouter un deplacement intermediaire
 
 %% Deplacements polylignes
-
+fprintf(' \n Début etude des polylines ')
 for a=1:POLY_COL-1
 POLY_X=[];
 POLY_Y=[];
@@ -249,8 +250,10 @@ if size(POLY_X,1)>1
     end
 end
 end
-OPTI_TRACER(M_DEP)
-disp('fini')
+fprintf(' \n Fin etude des polylines ')
+% %%
+% OPTI_TRACER(M_DEP)
+ disp('fini')
 
 %% Maintenant il faut relier les points en mode tracer et entre les points sans tracer
 %% Continuous ________ , hidden _ _ _ _ , CENTER ____ _ ____ _ , phantom ____ _ _ ____ , DOT . . . . , DASHED - - - - -
